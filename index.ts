@@ -19,16 +19,19 @@ var client = new Twitter({
 client.stream(
   "statuses/filter",
   {
-    track: "clubhouse"
+    track: "joinclubhouse"
     //locations: '18.3074488,-34.3583284,19.0046700,-33.4712700'
   },
   function(stream) {
     stream.on("data", function(tweet) {
-      // for (const url of tweet.entities.urls) {
-      //   const expanded_url = url.expanded_url
-      //   url.expanded_url.match(/^https:\/\/joinclubhouse.com\/events\/(.*)$/)
-      // }
-      console.log(tweet.entities.urls)
+      for (const url of tweet.entities.urls) {
+        const expanded_url: String = url.expanded_url
+        const match = expanded_url.match(/^https:\/\/joinclubhouse.com\/event\/(.*)$/)
+        if (match === null) {
+          continue
+        }
+        console.log(match[0])
+      }
     })
     stream.on("error", function(error) {
       console.log(error)
