@@ -24,7 +24,11 @@ client.stream(
   },
   function(stream) {
     stream.on("data", function(tweet) {
-      console.log(tweet.text)
+      // for (const url of tweet.entities.urls) {
+      //   const expanded_url = url.expanded_url
+      //   url.expanded_url.match(/^https:\/\/joinclubhouse.com\/events\/(.*)$/)
+      // }
+      console.log(tweet.entities.urls)
     })
     stream.on("error", function(error) {
       console.log(error)
