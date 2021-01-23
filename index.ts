@@ -1,4 +1,3 @@
-import {promises as fs} from "fs";
 import * as dotenv from "dotenv";
 
 import * as Twitter from "twitter";
@@ -46,14 +45,12 @@ async function main() {
             spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID,
             range: "A1",
             auth: googleAuth,
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
+            valueInputOption: "RAW",
+            insertDataOption: "INSERT_ROWS",
             requestBody: {
-              values: [
-                [expanded_url]
-              ],
-            }
-          })
+              values: [[expanded_url]],
+            },
+          });
         }
       });
       stream.on("error", function (error) {
@@ -63,7 +60,7 @@ async function main() {
   );
 }
 
-main().catch(err => {
-  console.error(err)
-  process.exit(1)
-})
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
