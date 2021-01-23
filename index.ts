@@ -1,4 +1,4 @@
-const Twitter = require("twitter")
+import * as Twitter from "twitter"
 
 const TW_CONSUMER_KEY = process.env.TW_CONSUMER_KEY || "XXXXXXXXXXXXXXXXX"
 const TW_CONSUMER_SEC = process.env.TW_CONSUMER_SEC || "XXXXXXXXXXXXXXXXX"
