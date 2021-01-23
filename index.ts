@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import {promises as fs} from "fs";
 import * as dotenv from "dotenv";
 
 import * as Twitter from "twitter";
@@ -20,14 +20,10 @@ const client = new Twitter({
   access_token_secret: TW_ACCESS_TOKEN_SEC,
 });
 
-const sheets = google.sheets("v4");
-fs.readFile("credentials.json", (err, content) => {
-  if (err) return console.log("Error loading client secret file:", err);
-  // Authorize a client with credentials, then call the Google Sheets API.
-  authorizeGoogle(JSON.parse(content.toString()), main);
-});
+async function main() {
+  const sheets = google.sheets("v4");
+  const googleAuth = await authorizeGoogle();
 
-async function main(googleAuth) {
   client.stream(
     "statuses/filter",
     {
@@ -66,3 +62,8 @@ async function main(googleAuth) {
     }
   );
 }
+
+main().catch(err => {
+  console.error(err)
+  process.exit(1)
+})

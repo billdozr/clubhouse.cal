@@ -1,4 +1,4 @@
-import * as fs from 'fs'
+import {promises as fs} from 'fs'
 import * as readline from 'readline'
 
 import {google} from "googleapis"
@@ -7,51 +7,52 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = 'token.json';
 
 /**
- * Create an OAuth2 client with the given credentials, and then execute the
- * given callback function.
- * @param {Object} credentials The authorization client credentials.
- * @param {function} callback The callback to call with the authorized client.
+ * Create an OAuth2 client with the given credentials.
  */
-export function authorizeGoogle(credentials, callback) {
+export async function authorizeGoogle() {
+  const credentials = JSON.parse((await fs.readFile("credentials.json")).toString())
+
   const {client_secret, client_id, redirect_uris} = credentials.web;
   const oAuth2Client = new google.auth.OAuth2(
       client_id, client_secret, redirect_uris[0]);
 
   // Check if we have previously stored a token.
-  fs.readFile(TOKEN_PATH, (err, token) => {
-    if (err) return getNewGoogleToken(oAuth2Client, callback);
-    oAuth2Client.setCredentials(JSON.parse(token.toString()));
-    callback(oAuth2Client);
-  });
+  const token = await (async () => {
+    try {
+      return JSON.parse((await fs.readFile(TOKEN_PATH)).toString())
+    } catch (err) {
+      return getNewGoogleToken(oAuth2Client)
+    }
+  })()
+  oAuth2Client.setCredentials(token);
+  return oAuth2Client
 }
 
 /**
- * Get and store new token after prompting for user authorization, and then
- * execute the given callback with the authorized OAuth2 client.
+ * Get and store new token after prompting for user authorization.
  * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback for the authorized client.
  */
-export function getNewGoogleToken(oAuth2Client, callback) {
+export async function getNewGoogleToken(oAuth2Client) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
   });
   console.log('Authorize this app by visiting this url:', authUrl);
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-  rl.question('Enter the code from that page here: ', (code) => {
-    rl.close();
-    oAuth2Client.getToken(code, (err, token) => {
-      if (err) return console.error('Error while trying to retrieve access token', err);
-      oAuth2Client.setCredentials(token);
-      // Store the token to disk for later program executions
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) return console.error(err);
-        console.log('Token stored to', TOKEN_PATH);
-      });
-      callback(oAuth2Client);
+  const code = new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
     });
-  });
+    rl.question('Enter the code from that page here: ', (code) => {
+      rl.close();
+      resolve(code);
+    })
+  })
+  const token = await oAuth2Client.getToken(code)
+
+  // Store the token to disk for later program executions
+  await fs.writeFile(TOKEN_PATH, JSON.stringify(token))
+  console.log('Token stored to', TOKEN_PATH);
+
+  return token
 }
