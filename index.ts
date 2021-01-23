@@ -1,5 +1,7 @@
 import * as Twitter from "twitter"
+import * as dotenv from "dotenv"
 
+dotenv.config()
 const TW_CONSUMER_KEY = process.env.TW_CONSUMER_KEY || "XXXXXXXXXXXXXXXXX"
 const TW_CONSUMER_SEC = process.env.TW_CONSUMER_SEC || "XXXXXXXXXXXXXXXXX"
 const TW_ACCESS_TOKEN_KEY =
