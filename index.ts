@@ -1,4 +1,5 @@
 import * as Twitter from "twitter"
+import {google} from "googleapis"
 import * as dotenv from "dotenv"
 
 dotenv.config()
@@ -9,12 +10,15 @@ const TW_ACCESS_TOKEN_KEY =
 const TW_ACCESS_TOKEN_SEC =
   process.env.TW_ACCESS_TOKEN_SEC || "XXXXXXXXXXXXXXXXX"
 
-var client = new Twitter({
+const client = new Twitter({
   consumer_key: TW_CONSUMER_KEY,
   consumer_secret: TW_CONSUMER_SEC,
   access_token_key: TW_ACCESS_TOKEN_KEY,
   access_token_secret: TW_ACCESS_TOKEN_SEC
 })
+
+const sheets = google.sheets('v4')
+// TODO: setup auth
 
 client.stream(
   "statuses/filter",
@@ -30,7 +34,7 @@ client.stream(
         if (match === null) {
           continue
         }
-        console.log(match[0])
+        console.log(expanded_url)
       }
     })
     stream.on("error", function(error) {
