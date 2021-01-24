@@ -52,7 +52,7 @@ async function main() {
               valueInputOption: "RAW",
               insertDataOption: "INSERT_ROWS",
               requestBody: {
-                values: [[dateRoom, nameRoom, descRoom, linkRoom]],
+                values: [[nameRoom, descRoom, dateRoom, linkRoom]],
               },
             });
           });
@@ -66,21 +66,19 @@ async function main() {
 }
 
 const parseRoomInfo = (body) => {
-  let rexp = /content="(.*?)"/gi
+  const rexp = /content="(.*?)"/gi
 
-  let new_data = matchAll(body, rexp).toArray()
+  const new_data = matchAll(body, rexp).toArray()
 
-  let nameRoom = new_data[3]
-  let descRoom = new_data[4]
-  let linkRoom = new_data[7]
+  const nameRoom = new_data[3]
+  const descRoom = new_data[4]
+  const linkRoom = new_data[7]
 
-  let step_1 = descRoom.match('(.*?).with')
-  let step_2 = step_1[1].replace(",", "")
-  let dateRoom = step_2.replace("at ", "")
+  const step_1 = descRoom.match('(.*?).with')
+  const step_2 = step_1[1].replace(",", "")
+  const dateRoom = step_2.replace("at ", "")
 
-  const parsedData = JSON.parse('[{"dateRoom":"' + dateRoom + '", "nameRoom":"' + nameRoom + '" ,"descRoom":"' + descRoom + '" , "linkRoom":"' + linkRoom + '" }]')
-  console.log(parsedData)
-  return parsedData
+  return { dateRoom, nameRoom, descRoom, linkRoom }
 }
 
 const fetchContent = (url, onComplete) => {
