@@ -46,16 +46,18 @@ async function main() {
           console.log(expanded_url);
 
           fetchContent(match[0], async ({ nameRoom, withRoom, descRoom, dateRoom, linkRoom }) => {
-            const dateISO = moment(dateRoom, "dddd MMMM DD HH:mma").format("yyyyMMDDTHHmmss\\Z")
+            const dateFormat = "dddd MMMM DD HH:mma"
+            const dateISO = moment(dateRoom, dateFormat).toISOString()
+            const dateCal = moment(dateRoom, dateFormat).format("yyyyMMDDTHHmmss\\Z")
             const gcalLink = `https://calendar.google.com/calendar/r/eventedit?text=${encodeURI(nameRoom)}&dates=${encodeURI(dateISO)}/${encodeURI(dateISO)}&details=${encodeURI(descRoom)}+${encodeURI(linkRoom)}`
             await sheets.spreadsheets.values.append({
               spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID,
-              range: "Sheet1!A:F",
+              range: "Sheet1!A:G",
               auth: googleAuth,
               valueInputOption: "RAW",
               insertDataOption: "INSERT_ROWS",
               requestBody: {
-                values: [[nameRoom, withRoom, descRoom, dateRoom, linkRoom, gcalLink]],
+                values: [[nameRoom, withRoom, descRoom, dateRoom, linkRoom, gcalLink, dateISO]],
               },
             });
           });
