@@ -3,6 +3,8 @@ import * as dotenv from "dotenv";
 import * as Twitter from "twitter";
 import { google } from "googleapis";
 import { authorizeGoogle } from "./google_auth";
+import * as matchAll from "match-all"
+import * as fetch from "node-fetch"
 
 dotenv.config();
 const TW_CONSUMER_KEY = process.env.TW_CONSUMER_KEY || "XXXXXXXXXXXXXXXXX";
@@ -19,6 +21,7 @@ const client = new Twitter({
   access_token_secret: TW_ACCESS_TOKEN_SEC,
 });
 
+
 async function main() {
   const sheets = google.sheets("v4");
   const googleAuth = await authorizeGoogle();
@@ -34,18 +37,19 @@ async function main() {
         for (const url of tweet.entities.urls) {
           const expanded_url: String = url.expanded_url;
           const match = expanded_url.match(
-            /^https:\/\/joinclubhouse.com\/event\/(.*)$/
+            /^http[.]*:\/\/[www.]*joinclubhouse.com\/event\/(.*)$/
           );
           if (match === null) {
-            continue;
+            continue; 
           }
+          getContent(match[0])
           console.log(expanded_url);
 
           await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID,
             range: "A1",
             auth: googleAuth,
-            valueInputOption: "RAW",
+            valueInputOption: "RAW",  
             insertDataOption: "INSERT_ROWS",
             requestBody: {
               values: [[expanded_url]],
@@ -59,6 +63,33 @@ async function main() {
     }
   );
 }
+
+let returnRoomInfo = (body) => {
+
+  let rexp = /content="(.*?)"/gi
+
+  let new_data = matchAll(body, rexp).toArray()
+
+  let nameRoom = new_data[3]
+  let descRoom = new_data[4]
+  let linkRoom = new_data[7]
+
+  let step_1 = descRoom.match('(.*?).with')
+  let step_2 = step_1[1].replace(",", "")
+  let dateRoom = step_2.replace("at ", "")
+
+  let parsedData = '[{"dateRoom":"'+ dateRoom +'", "nameRoom":"'+ nameRoom +'" ,"descRoom":"'+  descRoom +'" , "linkRoom":"'+ linkRoom +'" }]'
+  console.log(parsedData)
+}
+
+let getContent = (url) => {
+  fetch(url, {static: true})
+    .then(
+        response => response.text()
+    ).then(
+        text => returnRoomInfo(text)
+    );
+} 
 
 main().catch((err) => {
   console.error(err);
