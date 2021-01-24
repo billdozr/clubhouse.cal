@@ -40,20 +40,21 @@ async function main() {
             /^(http|https):\/\/[www.]*joinclubhouse.com\/event\/(.*)$/
           );
           if (match === null) {
-            continue; 
+            continue;
           }
-          getContent(match[0])
           console.log(expanded_url);
 
-          await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID,
-            range: "A1",
-            auth: googleAuth,
-            valueInputOption: "RAW",  
-            insertDataOption: "INSERT_ROWS",
-            requestBody: {
-              values: [[expanded_url]],
-            },
+          fetchContent(match[0], async ({ dateRoom, nameRoom, descRoom, linkRoom }) => {
+            await sheets.spreadsheets.values.append({
+              spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID,
+              range: "Sheet1!A:D",
+              auth: googleAuth,
+              valueInputOption: "RAW",
+              insertDataOption: "INSERT_ROWS",
+              requestBody: {
+                values: [[dateRoom, nameRoom, descRoom, linkRoom]],
+              },
+            });
           });
         }
       });
@@ -64,8 +65,7 @@ async function main() {
   );
 }
 
-let returnRoomInfo = (body) => {
-
+const parseRoomInfo = (body) => {
   let rexp = /content="(.*?)"/gi
 
   let new_data = matchAll(body, rexp).toArray()
@@ -78,18 +78,19 @@ let returnRoomInfo = (body) => {
   let step_2 = step_1[1].replace(",", "")
   let dateRoom = step_2.replace("at ", "")
 
-  let parsedData = JSON.parse('[{"dateRoom":"'+ dateRoom +'", "nameRoom":"'+ nameRoom +'" ,"descRoom":"'+  descRoom +'" , "linkRoom":"'+ linkRoom +'" }]')
+  const parsedData = JSON.parse('[{"dateRoom":"' + dateRoom + '", "nameRoom":"' + nameRoom + '" ,"descRoom":"' + descRoom + '" , "linkRoom":"' + linkRoom + '" }]')
   console.log(parsedData)
+  return parsedData
 }
 
-let getContent = (url) => {
-  fetch(url, {static: true})
+const fetchContent = (url, onComplete) => {
+  fetch(url, { static: true })
     .then(
-        response => response.text()
+      response => response.text()
     ).then(
-        text => returnRoomInfo(text)
+      text => onComplete(parseRoomInfo(text))
     );
-} 
+}
 
 main().catch((err) => {
   console.error(err);
