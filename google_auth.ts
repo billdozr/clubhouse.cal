@@ -43,7 +43,7 @@ export async function getNewGoogleToken(oAuth2Client) {
     scope: SCOPES,
   });
   console.log("Authorize this app by visiting this url:", authUrl);
-  const code = new Promise((resolve) => {
+  const code = await new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
