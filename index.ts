@@ -37,7 +37,7 @@ async function main() {
         for (const url of tweet.entities.urls) {
           const expanded_url: String = url.expanded_url;
           const match = expanded_url.match(
-            /^http[.]*:\/\/[www.]*joinclubhouse.com\/event\/(.*)$/
+            /^(http|https):\/\/[www.]*joinclubhouse.com\/event\/(.*)$/
           );
           if (match === null) {
             continue; 
