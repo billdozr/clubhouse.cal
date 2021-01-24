@@ -5,6 +5,7 @@ import { google } from "googleapis";
 import { authorizeGoogle } from "./google_auth";
 import * as matchAll from "match-all"
 import * as fetch from "node-fetch"
+import * as moment from "moment"
 
 dotenv.config();
 const TW_CONSUMER_KEY = process.env.TW_CONSUMER_KEY || "XXXXXXXXXXXXXXXXX";
@@ -44,15 +45,17 @@ async function main() {
           }
           console.log(expanded_url);
 
-          fetchContent(match[0], async ({ dateRoom, nameRoom, descRoom, linkRoom }) => {
+          fetchContent(match[0], async ({ nameRoom, withRoom, descRoom, dateRoom, linkRoom }) => {
+            const dateISO = moment(dateRoom, "dddd MMMM DD HH:mma").format("yyyyMMDDTHHmmss\\Z")
+            const gcalLink = `https://calendar.google.com/calendar/r/eventedit?text=${encodeURI(nameRoom)}&dates=${encodeURI(dateISO)}/${encodeURI(dateISO)}&details=${encodeURI(descRoom)}+${encodeURI(linkRoom)}`
             await sheets.spreadsheets.values.append({
               spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID,
-              range: "Sheet1!A:D",
+              range: "Sheet1!A:F",
               auth: googleAuth,
               valueInputOption: "RAW",
               insertDataOption: "INSERT_ROWS",
               requestBody: {
-                values: [[nameRoom, descRoom, dateRoom, linkRoom]],
+                values: [[nameRoom, withRoom, descRoom, dateRoom, linkRoom, gcalLink]],
               },
             });
           });
@@ -71,14 +74,16 @@ const parseRoomInfo = (body) => {
   const new_data = matchAll(body, rexp).toArray()
 
   const nameRoom = new_data[3]
-  const descRoom = new_data[4]
+  const fullDescRoom = new_data[4]
   const linkRoom = new_data[7]
 
-  const step_1 = descRoom.match('(.*?).with')
+  const step_1 = fullDescRoom.match('(.*?).with')
   const step_2 = step_1[1].replace(",", "")
   const dateRoom = step_2.replace("at ", "")
+  const withRoom = fullDescRoom.substring(fullDescRoom.indexOf("with") + 5, fullDescRoom.indexOf("."))
+  const descRoom = fullDescRoom.substring(fullDescRoom.indexOf(".") + 2)
 
-  return { dateRoom, nameRoom, descRoom, linkRoom }
+  return { nameRoom, withRoom, descRoom, dateRoom, linkRoom }
 }
 
 const fetchContent = (url, onComplete) => {
