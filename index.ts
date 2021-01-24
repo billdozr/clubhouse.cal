@@ -78,7 +78,7 @@ let returnRoomInfo = (body) => {
   let step_2 = step_1[1].replace(",", "")
   let dateRoom = step_2.replace("at ", "")
 
-  let parsedData = '[{"dateRoom":"'+ dateRoom +'", "nameRoom":"'+ nameRoom +'" ,"descRoom":"'+  descRoom +'" , "linkRoom":"'+ linkRoom +'" }]'
+  let parsedData = JSON.parse('[{"dateRoom":"'+ dateRoom +'", "nameRoom":"'+ nameRoom +'" ,"descRoom":"'+  descRoom +'" , "linkRoom":"'+ linkRoom +'" }]')
   console.log(parsedData)
 }
 
