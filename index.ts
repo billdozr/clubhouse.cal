@@ -49,7 +49,7 @@ async function main() {
             const dateFormat = "dddd MMMM DD HH:mma"
             const dateISO = moment(dateRoom, dateFormat).toISOString()
             const dateCal = moment(dateRoom, dateFormat).format("yyyyMMDDTHHmmss\\Z")
-            const gcalLink = `https://calendar.google.com/calendar/r/eventedit?text=${encodeURI(nameRoom)}&dates=${encodeURI(dateISO)}/${encodeURI(dateISO)}&details=${encodeURI(descRoom)}+${encodeURI(linkRoom)}`
+            const gcalLink = `https://calendar.google.com/calendar/r/eventedit?text=${encodeURI(nameRoom)}&dates=${encodeURI(dateCal)}/${encodeURI(dateCal)}&details=${encodeURI(descRoom)}+${encodeURI(linkRoom)}`
             await sheets.spreadsheets.values.append({
               spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID,
               range: "Sheet1!A:G",
