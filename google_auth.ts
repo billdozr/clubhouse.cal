@@ -22,14 +22,14 @@ export async function authorizeGoogle() {
   );
 
   // Check if we have previously stored a token.
-  const token = await (async () => {
+  const { tokens } = await (async () => {
     try {
       return JSON.parse((await fs.readFile(TOKEN_PATH)).toString());
     } catch (err) {
       return getNewGoogleToken(oAuth2Client);
     }
   })();
-  oAuth2Client.setCredentials(token);
+  oAuth2Client.setCredentials(tokens);
   return oAuth2Client;
 }
 
